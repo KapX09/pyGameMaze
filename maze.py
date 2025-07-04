@@ -88,12 +88,37 @@ while running:
             running = False # will close the game window
 
     '''Handle Key press to move the for player'''
-          
-    screen.fill((0, 0, 0))  # Clear screen with black
+    # Get all currently pressed keys
+    keys = pygame.key.get_pressed()
+    
+    # Movement: Check boundaries and wall collision
+    new_x, new_y = player_x, player_y  # Store current position
+    
+    if keys[pygame.K_LEFT]:
+        new_x -= 1
+    elif keys[pygame.K_RIGHT]:
+        new_x += 1
+    elif keys[pygame.K_UP]:
+        new_y -= 1
+    elif keys[pygame.K_DOWN]:
+        new_y += 1
+
+    # Only move player if new position is not a wall
+    if maze[new_y][new_x] != 'W':
+        player_x, player_y = new_x, new_y
+
+    '''Check Win condition'''
+    if (player_x, player_y) == GOAL_POS:
+        print("You reached the goal! You win!")
+        running = False  # Exit game loop
+
+    ''' Drawing functions'''
+    screen.fill(BLACK)  # Clear screen with black
     draw_maze() # calling the maze function
-    draw_player() # calling the player function 
     draw_goal()
+    draw_player() # calling the player function 
     pygame.display.flip()
 
 pygame.quit()
 sys.exit()
+
