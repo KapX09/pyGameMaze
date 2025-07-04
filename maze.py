@@ -3,23 +3,96 @@ import sys
 
 pygame.init()
 
+''' Window settings '''
+
 # Screen settings
 WIDTH, HEIGHT = 640, 480
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Maze Game")
 
-# Clock for FPS
+# Clock controls the frame rate (how fast the game updates)
 clock = pygame.time.Clock()
 
-# Main loop
+#Render the maze
+TILE_SIZE = 40 # Each tile (wall or path) will be 40x40 pixels
+
+# Colors in RGB format
+WHITE = (255, 255, 255) # player
+BLUE = (0, 0, 255) # wall
+BLACK = (0, 0, 0 ) # Background
+GREEN = (0, 255, 0) # Goal
+
+
+'''Maze Layout (2D Grid)'''
+#2d Grid to represent the maze
+
+# Each character represents a tile
+# 'W' = Wall, ' ' (space) = Path
+
+maze = [
+    "WWWWWWWWWW",
+    "W     W  W",
+    "W WWW W WW",
+    "W W   W  W",
+    "W W W WWWW",
+    "W   W    W",
+    "WWW WWWW W",
+    "W        W",
+    "WWWWWWWWWW"
+]
+
+'''Player and Goal Setup'''
+# Player's starting position in grid coordinates (x, y)
+player_x, player_y = 1, 1
+
+# Goal position (tile to reach to win)
+GOAL_POS = (8, 7)
+
+
+''' Drawing Functions'''
+def draw_maze():
+    """Draw the walls of the maze on screen"""
+    for y, row in enumerate(maze):  # Go through each row
+        for x, tile in enumerate(row):  # Go through each column
+            if tile == 'W':  # If it's a wall tile
+                pygame.draw.rect(
+                    screen,
+                    BLUE,
+                    (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                )
+
+def draw_player():
+    """Draw the player as a white square"""
+    pygame.draw.rect(
+        screen,
+        WHITE,
+        (player_x * TILE_SIZE + 5, player_y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10)
+    )
+
+def draw_goal():
+    """Draw the goal as a green square"""
+    pygame.draw.rect(
+        screen,
+        GREEN,
+        (GOAL_POS[0] * TILE_SIZE + 5, GOAL_POS[1] * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10)
+    )
+
+
+''' Main loop'''
 running = True
 while running:
-    clock.tick(60)  # 60 FPS
+    clock.tick(10)  # Limit to 10 Frame per Sec(FPS) slows moments a bit
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            running = False # will close the game window
 
+    '''Handle Key press to move the for player'''
+          
     screen.fill((0, 0, 0))  # Clear screen with black
+    draw_maze() # calling the maze function
+    draw_player() # calling the player function 
+    draw_goal()
     pygame.display.flip()
 
 pygame.quit()
