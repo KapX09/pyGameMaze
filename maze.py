@@ -4,9 +4,14 @@ import sys
 pygame.init()
 
 ''' Window settings '''
-
+GRID_WIDTH = 20  # 20 tiles horizontally
+GRID_HEIGHT = 15  # 15 tiles vertically
+TILE_SIZE = 40
+# Calculate screen size based on number of tiles
+WIDTH = GRID_WIDTH * TILE_SIZE
+HEIGHT = GRID_HEIGHT * TILE_SIZE
 # Screen settings
-WIDTH, HEIGHT = 640, 480
+# WIDTH, HEIGHT = 640, 480
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Maze Game")
 
@@ -14,7 +19,7 @@ pygame.display.set_caption("Maze Game")
 clock = pygame.time.Clock()
 
 #Render the maze
-TILE_SIZE = 40 # Each tile (wall or path) will be 40x40 pixels
+# TILE_SIZE = 40 # Each tile (wall or path) will be 40x40 pixels
 
 # Colors in RGB format
 WHITE = (255, 255, 255) # player
@@ -30,15 +35,21 @@ GREEN = (0, 255, 0) # Goal
 # 'W' = Wall, ' ' (space) = Path
 
 maze = [
-    "WWWWWWWWWW",
-    "W     W  W",
-    "W WWW W WW",
-    "W W   W  W",
-    "W W W WWWW",
-    "W   W    W",
-    "WWW WWWW W",
-    "W        W",
-    "WWWWWWWWWW"
+    "WWWWWWWWWWWWWWW",
+    "W   W       W W",
+    "W W W WWWWW W W",
+    "W W W     W W W",
+    "W W WWWWW W W W",
+    "W W     W W   W",
+    "W WWWWW W WWWWW",
+    "W     W W     W",
+    "WWW W W W WWW W",
+    "W   W W W W   W",
+    "W WWWWW W W W W",
+    "W       W W W W",
+    "W WWWWWWW W W W",
+    "W           W W",
+    "WWWWWWWWWWWWWWW"
 ]
 
 '''Player and Goal Setup'''
@@ -46,7 +57,7 @@ maze = [
 player_x, player_y = 1, 1
 
 # Goal position (tile to reach to win)
-GOAL_POS = (8, 7)
+GOAL_POS = (13, 13)
 
 
 ''' Drawing Functions'''
