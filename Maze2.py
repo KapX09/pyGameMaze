@@ -73,15 +73,33 @@ def draw_goal():
     )
 
 ''' Main loop '''
+# Main Game Loop
 running = True
 while running:
-    clock.tick(10)
+    clock.tick(10)  # 10 frames per second
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # Handle key presses
+    # Calculate elapsed time in seconds
+    elapsed_time = (pygame.time.get_ticks() - start_time) // 1000
+
+    # Check for timeout first
+    if elapsed_time >= timeout_limit:
+        print("Time's up! Try again next time.")
+        game_over = True
+        screen.fill(BLACK)
+        draw_maze()
+        draw_goal()
+        draw_player()
+        draw_score(elapsed_time, move_count)
+        draw_timeout_message()
+        pygame.display.flip()
+        pygame.time.delay(3000)  # Show message for 3 seconds
+        break  # Exit the loop
+
+    # Handle player movement only if game is not over
     keys = pygame.key.get_pressed()
     new_x, new_y = player_x, player_y
 
@@ -94,25 +112,33 @@ while running:
     elif keys[pygame.K_DOWN]:
         new_y += 1
 
-    # Check wall collision
+    # Move player if allowed
     if maze[new_y][new_x] != 'W':
-        if (new_x, new_y) != (player_x, player_y):  # NEW: Only count if position changes
+        if (new_x, new_y) != (player_x, player_y):
             move_count += 1
         player_x, player_y = new_x, new_y
 
-    # Check win condition
+    # Check for win
     if (player_x, player_y) == GOAL_POS:
-        elapsed_time = (pygame.time.get_ticks() - start_time) // 1000  # NEW: Time in seconds
-        print("You reached the goal! You win!")
+        print("You reached the goal!")
         print(f"Time taken: {elapsed_time} seconds")
         print(f"Moves taken: {move_count}")
-        running = False
+        game_over = True
+        screen.fill(BLACK)
+        draw_maze()
+        draw_goal()
+        draw_player()
+        draw_score(elapsed_time, move_count)
+        pygame.display.flip()
+        pygame.time.delay(3000)  # Show final screen for 3 seconds
+        break  # Exit the loop
 
-    # Drawing
+    # Draw everything
     screen.fill(BLACK)
     draw_maze()
     draw_goal()
     draw_player()
+    draw_score(elapsed_time, move_count)
     pygame.display.flip()
 
 pygame.quit()
