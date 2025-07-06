@@ -146,11 +146,12 @@ def show_instructions():
 
         # Instructions
         instructions = [
-            "🟢 Use arrow keys to move.",
-            "🏁 Reach the mocha-colored goal.",
-            "🕒 You have 30 seconds!",
-            "🚧 Avoid the espresso-brown walls.",
-            "☕ Enjoy your coffee-themed maze journey!"
+            "White circle is a player",
+            "Use arrow keys to move white circle.",
+            "Reach the mocha-colored goal.",
+            "You have 30 seconds!",
+            "Avoid the espresso-brown walls.",
+            "Enjoy your coffee-themed maze journey!"
         ]
 
         for i, line in enumerate(instructions):
