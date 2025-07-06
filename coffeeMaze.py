@@ -27,7 +27,8 @@ font = pygame.font.SysFont(None, 32)  # Default font, size 32
 # -----------------------------
 WALL_COLOR = (97, 71, 55)       # espresso brown
 PATH_COLOR = (240, 234, 214)    # light latte cream
-PLAYER_COLOR = (255, 248, 220)  # soft vanilla (light beige)
+# PLAYER_COLOR = (255, 248, 220)  # soft vanilla (light beige)
+PLAYER_COLOR = (255,255,255) # WHITE
 GOAL_COLOR = (149, 125, 106)    # mocha
 TEXT_COLOR = (60, 40, 30)       # deep coffee
 SIDEBAR_BG = (220, 210, 190)    # muted almond
