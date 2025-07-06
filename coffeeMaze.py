@@ -129,29 +129,52 @@ def draw_score(time_sec, moves):
     screen.blit(move_text, (GRID_WIDTH * TILE_SIZE + 20, 100))
 
 
-def draw_title():
+def show_instructions():
     '''
-    Draw the game title "MazeGame" at the top center above the game
+    Display instructions screen before the game starts.
     '''
-    # Header background strip
-    pygame.draw.rect(screen, SIDEBAR_BG, (0, 0, WIDTH, TITLE_HEIGHT))
+    font_title = pygame.font.SysFont(None, 48)
+    font_body = pygame.font.SysFont(None, 30)
+    font_button = pygame.font.SysFont(None, 28)
 
-    # Use global font or define a fallback if needed
-    try:
-        title_font = pygame.font.SysFont('Arial', 48, bold=True)
-    except:
-        title_font = pygame.font.Font(None, 48)
+    while True:
+        screen.fill(PATH_COLOR)
 
-    # Render the title
-    title_surface = title_font.render("MazeGame", True, TEXT_COLOR)
+        # Title
+        title = font_title.render("How to Play", True, TEXT_COLOR)
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 60))
 
-    # Center the title horizontally
-    center_x = WIDTH // 2 - title_surface.get_width() // 2
-    center_y = TITLE_HEIGHT // 2 - title_surface.get_height() // 2
+        # Instructions
+        instructions = [
+            "🟢 Use arrow keys to move.",
+            "🏁 Reach the mocha-colored goal.",
+            "🕒 You have 30 seconds!",
+            "🚧 Avoid the espresso-brown walls.",
+            "☕ Enjoy your coffee-themed maze journey!"
+        ]
 
-    screen.blit(title_surface, (center_x, center_y))
+        for i, line in enumerate(instructions):
+            text = font_body.render(line, True, TEXT_COLOR)
+            screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 140 + i * 40))
 
+        # Start button
+        start_btn = pygame.Rect(WIDTH // 2 - 75, HEIGHT - 120, 150, 50)
+        pygame.draw.rect(screen, SIDEBAR_BG, start_btn, border_radius=8)
+        btn_text = font_button.render("Start Game", True, TEXT_COLOR)
+        screen.blit(btn_text, (
+            start_btn.centerx - btn_text.get_width() // 2,
+            start_btn.centery - btn_text.get_height() // 2
+        ))
 
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if start_btn.collidepoint(event.pos):
+                    return  # start game
 
 # not using 
 # def draw_grid():
@@ -240,7 +263,7 @@ def run_game():
     GOAL_POS = (13, 13)
     move_count = 0
     start_time = pygame.time.get_ticks()
-
+    
     while True:
         clock.tick(10)
         elapsed_time = (pygame.time.get_ticks() - start_time) // 1000
@@ -274,9 +297,7 @@ def run_game():
         if (player_x, player_y) == GOAL_POS:
             return show_end_screen("You Win!", elapsed_time, move_count)
 
-        # Drawing everything
-        screen.fill(PATH_COLOR)
-        draw_title() # to draw top title bar 
+        # Drawing everything 
         draw_maze()
         draw_goal(GOAL_POS)
         draw_player(player_x, player_y)
@@ -287,6 +308,7 @@ def run_game():
 # -----------------------------
 # Game Loop
 # -----------------------------
+show_instructions()
 while True:
     restart = run_game()
     if not restart:
