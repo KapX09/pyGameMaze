@@ -133,21 +133,41 @@ def show_instructions():
     '''
     Display instructions screen before the game starts.
     '''
-    font_title = pygame.font.SysFont(None, 48)
+    # Fonts
+    font_title = pygame.font.SysFont("Arial", 64, bold=True)
+    font_subtitle = pygame.font.SysFont("Comic Sans MS", 28, italic=True)  # Handwriting style
+    font_section = pygame.font.SysFont(None, 40)
     font_body = pygame.font.SysFont(None, 30)
     font_button = pygame.font.SysFont(None, 28)
 
     while True:
         screen.fill(PATH_COLOR)
 
-        # Title
-        title = font_title.render("How to Play", True, TEXT_COLOR)
-        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 60))
+        # --- Main Title ---
+        title_surface = font_title.render("MazeGame", True, TEXT_COLOR)
+        screen.blit(title_surface, (
+            WIDTH // 2 - title_surface.get_width() // 2,
+            40
+        ))
 
-        # Instructions
+        # --- Subtitle (handwriting style) ---
+        subtitle_surface = font_subtitle.render("Let the ice find Mocha", True, TEXT_COLOR)
+        screen.blit(subtitle_surface, (
+            WIDTH // 2 - subtitle_surface.get_width() // 2,
+            110
+        ))
+
+        # --- Section Header ---
+        section_title = font_section.render("How to Play", True, TEXT_COLOR)
+        screen.blit(section_title, (
+            WIDTH // 2 - section_title.get_width() // 2,
+            180
+        ))
+
+        # --- Instructions List ---
         instructions = [
-            "White circle is a player",
-            "Use arrow keys to move white circle.",
+            "Player is represented with while circle.",
+            "Use arrow keys to move circle.",
             "Reach the mocha-colored goal.",
             "You have 30 seconds!",
             "Avoid the espresso-brown walls.",
@@ -156,17 +176,22 @@ def show_instructions():
 
         for i, line in enumerate(instructions):
             text = font_body.render(line, True, TEXT_COLOR)
-            screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 140 + i * 40))
+            screen.blit(text, (
+                WIDTH // 2 - text.get_width() // 2,
+                240 + i * 35
+            ))
 
-        # Start button
-        start_btn = pygame.Rect(WIDTH // 2 - 75, HEIGHT - 120, 150, 50)
+        # --- Start Game Button ---
+        start_btn = pygame.Rect(WIDTH // 2 - 90, HEIGHT - 100, 180, 50)
         pygame.draw.rect(screen, SIDEBAR_BG, start_btn, border_radius=8)
+
         btn_text = font_button.render("Start Game", True, TEXT_COLOR)
         screen.blit(btn_text, (
             start_btn.centerx - btn_text.get_width() // 2,
             start_btn.centery - btn_text.get_height() // 2
         ))
 
+        # --- Event Handling ---
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -176,6 +201,7 @@ def show_instructions():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_btn.collidepoint(event.pos):
                     return  # start game
+
 
 # not using 
 # def draw_grid():
