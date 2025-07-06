@@ -8,7 +8,7 @@ pygame.init()
 # -----------------------------
 TILE_SIZE = 40
 GRID_WIDTH, GRID_HEIGHT = 20, 15
-WIDTH, HEIGHT = GRID_WIDTH * TILE_SIZE, GRID_HEIGHT * TILE_SIZE
+WIDTH, HEIGHT = GRID_WIDTH * TILE_SIZE + 200, GRID_HEIGHT * TILE_SIZE
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Maze Game")
@@ -22,6 +22,9 @@ BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 GRAY = (100, 100, 100)
+
+WALL_COLOR = (30, 60, 200)   # Soft deep blue
+PATH_COLOR = (15, 15, 15)    # Softer background
 
 # Timeout settings
 TIME_LIMIT = 30  # seconds
@@ -51,20 +54,39 @@ maze = [
 # Drawing Functions
 # -----------------------------
 def draw_maze():
+    screen.fill(PATH_COLOR) #set bg
+
     for y, row in enumerate(maze):
         for x, tile in enumerate(row):
             if tile == 'W':
-                pygame.draw.rect(screen, BLUE, (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+                pygame.draw.rect(screen, WALL_COLOR, (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
 
 def draw_player(x, y):
-    pygame.draw.rect(screen, WHITE, (x * TILE_SIZE + 5, y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10))
+    # pygame.draw.rect(screen, WHITE, (x * TILE_SIZE + 5, y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10))
+    pygame.draw.circle(
+        screen,
+        WHITE,
+        (x * TILE_SIZE + TILE_SIZE // 2, y * TILE_SIZE + TILE_SIZE // 2),
+        TILE_SIZE // 3
+    )
 
 def draw_goal(goal_pos):
-    pygame.draw.rect(screen, GREEN, (goal_pos[0] * TILE_SIZE + 5, goal_pos[1] * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10))
+    pygame.draw.rect(screen, (240,234,214), (goal_pos[0] * TILE_SIZE + 5, goal_pos[1] * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10))
+    # pygame.draw.rect(
+    #     screen,
+    #     (0, 200, 0),
+    #     (goal_pos[0] * TILE_SIZE + 8, goal_pos[1] * TILE_SIZE + 8, TILE_SIZE - 16, TILE_SIZE - 16),
+    #     border_radius=6
+    # )
 
 def draw_score(time_sec, moves):
-    score_text = font.render(f"Time: {time_sec}s  Moves: {moves}", True, WHITE)
-    screen.blit(score_text, (20, 10))
+    title = font.render("Maze Status", True, WHITE)
+    screen.blit(title, (GRID_WIDTH * TILE_SIZE + 20, 10))
+
+    score_text = font.render(f"Time: {time_sec}s", True, WHITE)
+    move_text = font.render(f"Moves: {moves}", True, WHITE)
+    screen.blit(score_text, (GRID_WIDTH * TILE_SIZE + 20, 40))
+    screen.blit(move_text, (GRID_WIDTH * TILE_SIZE + 20, 80))
 
 # -----------------------------
 # End Screen with Buttons
