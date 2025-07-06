@@ -3,24 +3,32 @@ import sys
 
 pygame.init()
 
-''' Window settings '''
+# -----------------------------
+# Settings and Initialization
+# -----------------------------
 TILE_SIZE = 40
-GRID_WIDTH = 20
-GRID_HEIGHT = 15
-WIDTH = GRID_WIDTH * TILE_SIZE
-HEIGHT = GRID_HEIGHT * TILE_SIZE
+GRID_WIDTH, GRID_HEIGHT = 20, 15
+WIDTH, HEIGHT = GRID_WIDTH * TILE_SIZE, GRID_HEIGHT * TILE_SIZE
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Maze Game")
 clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 32)
 
 # Colors
-WHITE = (255, 255, 255)  # player
-BLUE = (0, 0, 255)       # wall
-BLACK = (0, 0, 0)        # background
-GREEN = (0, 255, 0)      # goal
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+GRAY = (100, 100, 100)
 
-''' Maze Layout '''
+# Timeout settings
+TIME_LIMIT = 30  # seconds
+
+# -----------------------------
+# Maze Layout
+# -----------------------------
 maze = [
     "WWWWWWWWWWWWWWW",
     "W   W       W W",
@@ -39,108 +47,138 @@ maze = [
     "WWWWWWWWWWWWWWW"
 ]
 
-''' Player and Goal Setup '''
-player_x, player_y = 1, 1
-GOAL_POS = (13, 13)
-
-# NEW: Score Tracking Variables 
-start_time = pygame.time.get_ticks()  #  Start the timer
-move_count = 0                        #  Count the player's moves
-
-''' Drawing Functions '''
+# -----------------------------
+# Drawing Functions
+# -----------------------------
 def draw_maze():
     for y, row in enumerate(maze):
         for x, tile in enumerate(row):
             if tile == 'W':
-                pygame.draw.rect(
-                    screen,
-                    BLUE,
-                    (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                )
+                pygame.draw.rect(screen, BLUE, (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
 
-def draw_player():
-    pygame.draw.rect(
-        screen,
-        WHITE,
-        (player_x * TILE_SIZE + 5, player_y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10)
-    )
+def draw_player(x, y):
+    pygame.draw.rect(screen, WHITE, (x * TILE_SIZE + 5, y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10))
 
-def draw_goal():
-    pygame.draw.rect(
-        screen,
-        GREEN,
-        (GOAL_POS[0] * TILE_SIZE + 5, GOAL_POS[1] * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10)
-    )
+def draw_goal(goal_pos):
+    pygame.draw.rect(screen, GREEN, (goal_pos[0] * TILE_SIZE + 5, goal_pos[1] * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10))
 
-''' Main loop '''
-# Main Game Loop
-running = True
-while running:
-    clock.tick(10)  # 10 frames per second
+def draw_score(time_sec, moves):
+    score_text = font.render(f"Time: {time_sec}s  Moves: {moves}", True, WHITE)
+    screen.blit(score_text, (20, 10))
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+# -----------------------------
+# End Screen with Buttons
+# -----------------------------
+def show_end_screen(message, time_sec, moves):
+    # Fonts
+    title_font = pygame.font.SysFont(None, 48)  # Bigger for title
+    label_font = pygame.font.SysFont(None, 32)  # Standard labels
+    button_font = pygame.font.SysFont(None, 28)  # Buttons
 
-    # Calculate elapsed time in seconds
-    elapsed_time = (pygame.time.get_ticks() - start_time) // 1000
+    while True:
+        screen.fill(BLACK)
 
-    # Check for timeout first
-    if elapsed_time >= timeout_limit:
-        print("Time's up! Try again next time.")
-        game_over = True
+        # Center Y positioning
+        y_start = HEIGHT // 2 - 120
+
+        # Title message ("You Win!" or "Time's up!")
+        title = title_font.render(message, True, GREEN if message == "You Win!" else RED)
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, y_start))
+
+        # Time and moves info
+        time_text = label_font.render(f"Time: {time_sec} seconds", True, WHITE)
+        move_text = label_font.render(f"Moves: {moves}", True, WHITE)
+        screen.blit(time_text, (WIDTH // 2 - time_text.get_width() // 2, y_start + 50))
+        screen.blit(move_text, (WIDTH // 2 - move_text.get_width() // 2, y_start + 90))
+
+        # Buttons
+        play_again_btn = pygame.Rect(WIDTH // 2 - 120, y_start + 150, 110, 40)
+        exit_btn = pygame.Rect(WIDTH // 2 + 10, y_start + 150, 100, 40)
+
+        pygame.draw.rect(screen, GRAY, play_again_btn)
+        pygame.draw.rect(screen, GRAY, exit_btn)
+
+        # Button Text
+        play_text = button_font.render("Play Again", True, BLACK)
+        exit_text = button_font.render("Exit", True, BLACK)
+
+        screen.blit(play_text, (
+            play_again_btn.centerx - play_text.get_width() // 2,
+            play_again_btn.centery - play_text.get_height() // 2
+        ))
+        screen.blit(exit_text, (
+            exit_btn.centerx - exit_text.get_width() // 2,
+            exit_btn.centery - exit_text.get_height() // 2
+        ))
+
+        pygame.display.flip()
+
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if play_again_btn.collidepoint(event.pos):
+                    return True  # Restart
+                elif exit_btn.collidepoint(event.pos):
+                    pygame.quit()
+                    sys.exit()
+
+# -----------------------------
+# Main Game Function
+# -----------------------------
+def run_game():
+    player_x, player_y = 1, 1
+    GOAL_POS = (13, 13)
+    move_count = 0
+    start_time = pygame.time.get_ticks()
+
+    while True:
+        clock.tick(10)
+        elapsed_time = (pygame.time.get_ticks() - start_time) // 1000
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        # Check timeout
+        if elapsed_time >= TIME_LIMIT:
+            return show_end_screen("Time's up!", elapsed_time, move_count)
+
+        # Handle key presses
+        keys = pygame.key.get_pressed()
+        new_x, new_y = player_x, player_y
+
+        if keys[pygame.K_LEFT]: new_x -= 1
+        elif keys[pygame.K_RIGHT]: new_x += 1
+        elif keys[pygame.K_UP]: new_y -= 1
+        elif keys[pygame.K_DOWN]: new_y += 1
+
+        # Valid move
+        if maze[new_y][new_x] != 'W':
+            if (new_x, new_y) != (player_x, player_y):
+                move_count += 1
+            player_x, player_y = new_x, new_y
+
+        # Check win
+        if (player_x, player_y) == GOAL_POS:
+            return show_end_screen("You Win!", elapsed_time, move_count)
+
+        # Draw everything
         screen.fill(BLACK)
         draw_maze()
-        draw_goal()
-        draw_player()
-        draw_score(elapsed_time, move_count)
-        draw_timeout_message()
-        pygame.display.flip()
-        pygame.time.delay(3000)  # Show message for 3 seconds
-        break  # Exit the loop
-
-    # Handle player movement only if game is not over
-    keys = pygame.key.get_pressed()
-    new_x, new_y = player_x, player_y
-
-    if keys[pygame.K_LEFT]:
-        new_x -= 1
-    elif keys[pygame.K_RIGHT]:
-        new_x += 1
-    elif keys[pygame.K_UP]:
-        new_y -= 1
-    elif keys[pygame.K_DOWN]:
-        new_y += 1
-
-    # Move player if allowed
-    if maze[new_y][new_x] != 'W':
-        if (new_x, new_y) != (player_x, player_y):
-            move_count += 1
-        player_x, player_y = new_x, new_y
-
-    # Check for win
-    if (player_x, player_y) == GOAL_POS:
-        print("You reached the goal!")
-        print(f"Time taken: {elapsed_time} seconds")
-        print(f"Moves taken: {move_count}")
-        game_over = True
-        screen.fill(BLACK)
-        draw_maze()
-        draw_goal()
-        draw_player()
+        draw_goal(GOAL_POS)
+        draw_player(player_x, player_y)
         draw_score(elapsed_time, move_count)
         pygame.display.flip()
-        pygame.time.delay(3000)  # Show final screen for 3 seconds
-        break  # Exit the loop
 
-    # Draw everything
-    screen.fill(BLACK)
-    draw_maze()
-    draw_goal()
-    draw_player()
-    draw_score(elapsed_time, move_count)
-    pygame.display.flip()
-
-pygame.quit()
-sys.exit()
-
+# -----------------------------
+# Run the Game Loop
+# -----------------------------
+while True:
+    restart = run_game()
+    if not restart:
+        break
