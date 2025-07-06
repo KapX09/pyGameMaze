@@ -27,8 +27,7 @@ font = pygame.font.SysFont(None, 32)  # Default font, size 32
 # -----------------------------
 WALL_COLOR = (97, 71, 55)       # espresso brown
 PATH_COLOR = (240, 234, 214)    # light latte cream
-# PLAYER_COLOR = (255, 248, 220)  # soft vanilla (light beige)
-PLAYER_COLOR = (255,255,255) # WHITE
+PLAYER_COLOR = (255, 255, 255)  # soft vanilla (light beige)
 GOAL_COLOR = (149, 125, 106)    # mocha
 TEXT_COLOR = (60, 40, 30)       # deep coffee
 SIDEBAR_BG = (220, 210, 190)    # muted almond
@@ -76,14 +75,19 @@ def draw_maze():
 
 def draw_player(x, y):
     '''
-    Draws the player as a soft beige circle at given (x, y) tile.
+    Draws the player as a glowing circle (drop shadow).
     '''
-    pygame.draw.circle(
-        screen,
-        PLAYER_COLOR,
-        (x * TILE_SIZE + TILE_SIZE // 2, y * TILE_SIZE + TILE_SIZE // 2),
-        TILE_SIZE // 3
-    )
+    center_x = x * TILE_SIZE + TILE_SIZE // 2
+    center_y = y * TILE_SIZE + TILE_SIZE // 2
+    radius = TILE_SIZE // 3
+
+    # Draw subtle shadow (behind player)
+    shadow_color = (210, 200, 180)  # slightly darker than background
+    pygame.draw.circle(screen, shadow_color, (center_x + 2, center_y + 2), radius)
+
+    # Draw main player circle
+    pygame.draw.circle(screen, PLAYER_COLOR, (center_x, center_y), radius)
+
 
 
 def draw_goal(goal_pos):
