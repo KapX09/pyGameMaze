@@ -10,11 +10,24 @@ pygame.init()
 
 # Tile and grid size
 TILE_SIZE = 40
-GRID_WIDTH, GRID_HEIGHT = 20, 15
+GRID_WIDTH, GRID_HEIGHT = 15, 15
+# adding title
+TITLE_HEIGHT = 60  # extra vertical space for title
 
-# Width includes extra space for sidebar
+# # Width includes extra space for sidebar
 WIDTH = GRID_WIDTH * TILE_SIZE + 200
-HEIGHT = GRID_HEIGHT * TILE_SIZE
+# HEIGHT = GRID_HEIGHT * TILE_SIZE # updating height to add title 
+HEIGHT = GRID_HEIGHT * TILE_SIZE + TITLE_HEIGHT
+ 
+
+#to align in a center
+MAZE_WIDTH_PX = GRID_WIDTH * TILE_SIZE
+MAZE_HEIGHT_PX = GRID_HEIGHT * TILE_SIZE
+# Calculate offsets to center maze
+MAZE_OFFSET_X = (WIDTH - 200 - MAZE_WIDTH_PX) // 2  # left space, excluding sidebar
+# MAZE_OFFSET_Y = (HEIGHT - MAZE_HEIGHT_PX) // 2 updating for title
+MAZE_OFFSET_Y = TITLE_HEIGHT + (HEIGHT - TITLE_HEIGHT - MAZE_HEIGHT_PX) // 2
+
 
 # Set up display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -27,7 +40,8 @@ font = pygame.font.SysFont(None, 32)  # Default font, size 32
 # -----------------------------
 WALL_COLOR = (97, 71, 55)       # espresso brown
 PATH_COLOR = (240, 234, 214)    # light latte cream
-PLAYER_COLOR = (255, 255, 255)  # soft vanilla (light beige)
+# PLAYER_COLOR = (255, 248, 220)  # soft vanilla (light beige)
+PLAYER_COLOR = (255,255,255)
 GOAL_COLOR = (149, 125, 106)    # mocha
 TEXT_COLOR = (60, 40, 30)       # deep coffee
 SIDEBAR_BG = (220, 210, 190)    # muted almond
@@ -70,15 +84,16 @@ def draw_maze():
     for y, row in enumerate(maze):
         for x, tile in enumerate(row):
             if tile == 'W':
-                pygame.draw.rect(screen, WALL_COLOR, (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+                # pygame.draw.rect(screen, WALL_COLOR, (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+                pygame.draw.rect(screen,WALL_COLOR,(MAZE_OFFSET_X + x * TILE_SIZE, MAZE_OFFSET_Y + y * TILE_SIZE,TILE_SIZE,TILE_SIZE),border_radius=1)#to align centre
 
 
 def draw_player(x, y):
     '''
     Draws the player as a glowing circle (drop shadow).
     '''
-    center_x = x * TILE_SIZE + TILE_SIZE // 2
-    center_y = y * TILE_SIZE + TILE_SIZE // 2
+    center_x = MAZE_OFFSET_X + x * TILE_SIZE + TILE_SIZE // 2 # adding offset to align center
+    center_y = MAZE_OFFSET_Y + y * TILE_SIZE + TILE_SIZE // 2
     radius = TILE_SIZE // 3
 
     # Draw subtle shadow (behind player)
@@ -89,17 +104,12 @@ def draw_player(x, y):
     pygame.draw.circle(screen, PLAYER_COLOR, (center_x, center_y), radius)
 
 
-
 def draw_goal(goal_pos):
     '''
     Draws the goal as a rounded mocha rectangle.
     '''
     pygame.draw.rect(
-        screen,
-        GOAL_COLOR,
-        (goal_pos[0] * TILE_SIZE + 8, goal_pos[1] * TILE_SIZE + 8, TILE_SIZE - 16, TILE_SIZE - 16),
-        border_radius=6
-    )
+        screen, GOAL_COLOR,(MAZE_OFFSET_X + goal_pos[0] * TILE_SIZE + 8, MAZE_OFFSET_Y + goal_pos[1] * TILE_SIZE + 8, TILE_SIZE - 16, TILE_SIZE - 16),border_radius=6)
 
 
 def draw_score(time_sec, moves):
@@ -119,14 +129,42 @@ def draw_score(time_sec, moves):
     screen.blit(move_text, (GRID_WIDTH * TILE_SIZE + 20, 100))
 
 
-def draw_grid():
+def draw_title():
     '''
-    Draws subtle grid lines for visual structure.
+    Draw the game title "MazeGame" at the top center above the game
     '''
-    for x in range(GRID_WIDTH):
-        pygame.draw.line(screen, GRID_LINE_COLOR, (x * TILE_SIZE, 0), (x * TILE_SIZE, HEIGHT))
-    for y in range(GRID_HEIGHT):
-        pygame.draw.line(screen, GRID_LINE_COLOR, (0, y * TILE_SIZE), (GRID_WIDTH * TILE_SIZE, y * TILE_SIZE))
+    # Header background strip
+    pygame.draw.rect(screen, SIDEBAR_BG, (0, 0, WIDTH, TITLE_HEIGHT))
+
+    # Use global font or define a fallback if needed
+    try:
+        title_font = pygame.font.SysFont('Arial', 48, bold=True)
+    except:
+        title_font = pygame.font.Font(None, 48)
+
+    # Render the title
+    title_surface = title_font.render("MazeGame", True, TEXT_COLOR)
+
+    # Center the title horizontally
+    center_x = WIDTH // 2 - title_surface.get_width() // 2
+    center_y = TITLE_HEIGHT // 2 - title_surface.get_height() // 2
+
+    screen.blit(title_surface, (center_x, center_y))
+
+
+
+# not using 
+# def draw_grid():
+#     '''
+#     Draws subtle grid lines for visual structure.
+#     '''
+#     for x in range(GRID_WIDTH):
+#         pygame.draw.line(screen, GRID_LINE_COLOR, (x * TILE_SIZE, 0), (x * TILE_SIZE, HEIGHT))
+#     for y in range(GRID_HEIGHT):
+#         pygame.draw.line(screen, GRID_LINE_COLOR, (0, y * TILE_SIZE), (GRID_WIDTH * TILE_SIZE, y * TILE_SIZE))
+
+
+
 
 # -----------------------------
 # End Screen Function
@@ -237,6 +275,8 @@ def run_game():
             return show_end_screen("You Win!", elapsed_time, move_count)
 
         # Drawing everything
+        screen.fill(PATH_COLOR)
+        draw_title() # to draw top title bar 
         draw_maze()
         draw_goal(GOAL_POS)
         draw_player(player_x, player_y)
