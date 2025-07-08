@@ -1,21 +1,17 @@
 import pygame
 import sys
+import random
 
-# Initialize pygame modules (graphics, sound, etc.)
-pygame.init()
+pygame.init() # Initialize pygame modules (graphics, sound, etc.)
 
-# -----------------------------
-# Settings and Initialization
-# -----------------------------
 
-# Tile and grid size
+''' Settings and Initialization '''
+# size of tile and grid
 TILE_SIZE = 40
-GRID_WIDTH, GRID_HEIGHT = 15, 15
-# adding title
-TITLE_HEIGHT = 60  # extra vertical space for title
+GRID_WIDTH, GRID_HEIGHT = 17, 17 #must be odds
 
-# # Width includes extra space for sidebar
-WIDTH = GRID_WIDTH * TILE_SIZE + 200
+TITLE_HEIGHT = 60  # extra vertical space for title # adding title to add it into Height
+WIDTH = GRID_WIDTH * TILE_SIZE + 200 # Width includes extra space for sidebar
 # HEIGHT = GRID_HEIGHT * TILE_SIZE # updating height to add title 
 HEIGHT = GRID_HEIGHT * TILE_SIZE + TITLE_HEIGHT
  
@@ -28,6 +24,8 @@ MAZE_OFFSET_X = (WIDTH - 200 - MAZE_WIDTH_PX) // 2  # left space, excluding side
 # MAZE_OFFSET_Y = (HEIGHT - MAZE_HEIGHT_PX) // 2 updating for title
 MAZE_OFFSET_Y = TITLE_HEIGHT + (HEIGHT - TITLE_HEIGHT - MAZE_HEIGHT_PX) // 2
 
+#Globally setting the goal post
+GOAL_POS = (GRID_WIDTH - 2, GRID_HEIGHT - 2)
 
 # Set up display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -35,41 +33,23 @@ pygame.display.set_caption("Coffee Maze Game")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 32)  # Default font, size 32
 
+
 # -----------------------------
 # Color Palette (Coffee Theme)
 # -----------------------------
+
 WALL_COLOR = (97, 71, 55)       # espresso brown
 PATH_COLOR = (240, 234, 214)    # light latte cream
-# PLAYER_COLOR = (255, 248, 220)  # soft vanilla (light beige)
-PLAYER_COLOR = (255,255,255)
+PLAYER_COLOR = (255, 248, 250)  # soft vanilla (light beige)
+# PLAYER_COLOR = 	(255, 255, 255)
 GOAL_COLOR = (149, 125, 106)    # mocha
 TEXT_COLOR = (60, 40, 30)       # deep coffee
 SIDEBAR_BG = (220, 210, 190)    # muted almond
 GRID_LINE_COLOR = (200, 190, 170)  # subtle grid
 
+
 # Game timer
 TIME_LIMIT = 30  # seconds
-
-# -----------------------------
-# Maze Layout (W = wall, space = path)
-# -----------------------------
-maze = [
-    "WWWWWWWWWWWWWWW",
-    "W   W       W W",
-    "W W W WWWWW W W",
-    "W W W     W W W",
-    "W W WWWWW W W W",
-    "W W     W W   W",
-    "W WWWWW W WWWWW",
-    "W     W W     W",
-    "WWW W W W WWW W",
-    "W   W W W W   W",
-    "W WWWWW W W W W",
-    "W       W W W W",
-    "W WWWWWWW W W W",
-    "W           W W",
-    "WWWWWWWWWWWWWWW"
-]
 
 # -----------------------------
 # Drawing Functions
@@ -97,11 +77,16 @@ def draw_player(x, y):
     radius = TILE_SIZE // 3
 
     # Draw subtle shadow (behind player)
-    shadow_color = (210, 200, 180)  # slightly darker than background
-    pygame.draw.circle(screen, shadow_color, (center_x + 2, center_y + 2), radius)
+    # shadow_color = (210, 200, 180)  # slightly darker than background
+    # shadow_color = (255,200,20)
+    # pygame.draw.circle(screen, shadow_color, (center_x + 2, center_y + 2), radius)
 
     # Draw main player circle
     pygame.draw.circle(screen, PLAYER_COLOR, (center_x, center_y), radius)
+    # Draw circle border (outline)
+    BORDER_COLOR = (100, 100, 100)  # choose any contrasting color
+    border_width = 3  # thickness of border
+    pygame.draw.circle(screen, BORDER_COLOR, (center_x, center_y), radius, border_width)
 
 
 def draw_goal(goal_pos):
@@ -166,7 +151,7 @@ def show_instructions():
 
         # --- Instructions List ---
         instructions = [
-            "Player is represented with while circle.",
+            "Player is represented with white circle.",
             "Use arrow keys to move circle.",
             "Reach the mocha-colored goal.",
             "You have 30 seconds!",
@@ -278,6 +263,46 @@ def show_end_screen(message, time_sec, moves):
                     pygame.quit()
                     sys.exit()
 
+
+
+# -----------------------------
+# Generating maze
+# -----------------------------
+import random
+def generate_maze(width, height):
+    """
+    Generate a maze using recursive backtracking.
+    Maze dimensions should be odd (e.g., 21x21) for proper wall structure.
+    Returns a list of strings with 'W' for wall and ' ' for path.
+    """
+    # Internal dimensions must be odd
+    maze = [['W' for _ in range(width)] for _ in range(height)]
+
+    def carve(x, y):
+        directions = [(0, -2), (2, 0), (0, 2), (-2, 0)]
+        random.shuffle(directions)
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if 0 < nx < width - 1 and 0 < ny < height - 1 and maze[ny][nx] == 'W':
+                maze[ny][nx] = ' '
+                maze[y + dy // 2][x + dx // 2] = ' '
+                carve(nx, ny)
+
+    # Start in top-left corner (1,1)
+    maze[1][1] = ' '
+    carve(1, 1)
+
+    # Place exit in bottom-right (guaranteed path)
+    maze[height - 2][width - 2] = ' '
+
+    return [''.join(row) for row in maze]
+
+
+# -----------------------------
+# Maze Layout (W = wall, space = path)
+# -----------------------------
+maze = generate_maze(GRID_WIDTH, GRID_HEIGHT)
+
 # -----------------------------
 # Main Game Function
 # -----------------------------
@@ -287,7 +312,8 @@ def run_game():
     Main game loop: handles input, updates, rendering, and win/lose logic.
     '''
     player_x, player_y = 1, 1
-    GOAL_POS = (13, 13)
+    # GOAL_POS = (13, 13)# using formula instead
+    # GOAL_POS = (GRID_WIDTH - 2, GRID_HEIGHT - 2)# using global
     move_count = 0
     start_time = pygame.time.get_ticks()
     
